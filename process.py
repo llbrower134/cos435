@@ -7,19 +7,31 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import *
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.cluster import KMeans
+from sklearn.externals import joblib
 
 def main():
 
     raw_tweets = open(sys.argv[1])
     processed_tweets = process(raw_tweets)
     processed_tweets = [tweet for tweet in processed_tweets if tweet != []]
+
+    # Perform KMeans clustering
     tfidf = TfidfVectorizer(tokenizer=lambda i:i, lowercase=False)
-    tfs = tfidf.fit_transform(processed_tweets)
+    tfidf_matrix = tfidf.fit_transform(processed_tweets)
 
-    print(tfs)
+    km = KMeans(n_clusters=10)
+    km.fit(tfidf_matrix)
 
-    #for tweet in processed_tweets:
-    #    print (tweet)
+    print("Top terms per cluster:")
+    order_centroids = km.cluster_centers_.argsort()[:, ::-1]
+    terms = tfidf.get_feature_names()
+    for i in range(10):
+        print("Cluster %d:" % i)
+        for ind in order_centroids[i, :10]:
+            print(' %s' % terms[ind])
+        print
+
 
 def process(raw_tweets):
     tweets = []
