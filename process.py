@@ -16,21 +16,28 @@ def main():
     processed_tweets = process(raw_tweets)
     processed_tweets = [tweet for tweet in processed_tweets if tweet != []]
 
+    #print(len(processed_tweets))
+    kMeans(processed_tweets)
+
+
+def kMeans(processed_tweets):
     # Perform KMeans clustering
+    num_clusters = 10
     tfidf = TfidfVectorizer(tokenizer=lambda i:i, lowercase=False)
     tfidf_matrix = tfidf.fit_transform(processed_tweets)
 
-    km = KMeans(n_clusters=10)
+    km = KMeans(n_clusters=num_clusters, init='k-means++', n_init=1)
     km.fit(tfidf_matrix)
 
     print("Top terms per cluster:")
     order_centroids = km.cluster_centers_.argsort()[:, ::-1]
     terms = tfidf.get_feature_names()
-    for i in range(10):
+    for i in range(num_clusters):
         print("Cluster %d:" % i)
         for ind in order_centroids[i, :10]:
             print(' %s' % terms[ind])
         print
+
 
 
 def process(raw_tweets):
